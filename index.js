@@ -44,6 +44,25 @@ app.get('/tasks/:id', (req, res) => {
   res.json(tasksData);
 });
 
+// priority attribute to tasks
+app.get('/tasks/priority/:level', (req, res) => {
+  const { level } = req.params;
+
+  const allowed = ['low', 'medium', 'high'];
+
+  if (!allowed.includes(level)) {
+    return res.status(400).json({
+      message: 'Priority must be low, medium, or high'
+    });
+  }
+
+  const filtered = tasksData.tasks.filter(
+    task => task.priority === level
+  );
+
+  res.json(filtered);
+});
+
 // Implement POST /tasks: Create a new task with the required fields (title, description, completed).
 app.post('/tasks', (req, res) => {
 
@@ -52,13 +71,25 @@ const error = validateTask(req.body);
 if (error) {
   return res.status(400).json({ message: error });
 }
+const { title, description, completed , priority} = req.body;
 
-const { title, description, completed } = req.body;
+delete req.body.id;
+  delete req.body.createdAt;
+
+ const allowed = ['low', 'medium', 'high'];
+  if (priority && !allowed.includes(priority)) {
+    return res.status(400).json({
+      message: 'priority must be low, medium, or high'
+    });
+  }
+
+
    const newTask = {
     id: tasksData.tasks.length + 1,
     title,
     description,
     completed: completed ?? false,
+    priority: priority ?? 'low',
     createdAt: new Date().toISOString() //for sorting
   };
 
@@ -87,11 +118,12 @@ if (error) {
    if (!task) {
     return res.status(404).json({ message: 'Task not found' });
   }
- if (title !== undefined) task.title = title;
-  if (description !== undefined) task.description = description;
-  if (completed !== undefined) task.completed = completed;
+  delete req.body.id;
+  delete req.body.createdAt;
 
-   task.updatedAt = new Date().toISOString();
+  Object.assign(task, req.body);
+
+  task.updatedAt = new Date().toISOString();
 
   res.json({
     message: 'Task updated successfully',

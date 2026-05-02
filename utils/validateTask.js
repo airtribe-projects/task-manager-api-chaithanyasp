@@ -1,5 +1,5 @@
 const validateTask = (data, isUpdate = false) => {
-  const { title, description, completed } = data;
+  const { title, description, completed ,priority} = data;
 
   if (!isUpdate) {
     if (!title || !description) {
@@ -19,6 +19,10 @@ const validateTask = (data, isUpdate = false) => {
     return 'Completed must be a boolean';
   }
 
+   const allowed = ['low', 'medium', 'high'];
+  if (priority !== undefined && !allowed.includes(priority)) {
+    return 'Priority must be low, medium, or high';
+  }
   return null;
 };
 
