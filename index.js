@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const tasksData = require('./task.json');
 app.use(express.json());
+const validateTask = require('./utils/validateTask');
 
 app.get('/', (req, res) => {
   res.send('Task Manager API is running');
@@ -19,8 +20,14 @@ app.get('/tasks/:id', (req, res) => {
 
 // Implement POST /tasks: Create a new task with the required fields (title, description, completed).
 app.post('/tasks', (req, res) => {
-  const { title, description, completed } = req.body;
 
+const error = validateTask(req.body);
+
+if (error) {
+  return res.status(400).json({ message: error });
+}
+
+const { title, description, completed } = req.body;
    const newTask = {
     id: tasksData.tasks.length + 1,
     title,
@@ -39,6 +46,12 @@ app.post('/tasks', (req, res) => {
 
 // Implement PUT /tasks/:id: Update an existing task by its ID.
 app.put('/tasks/:id', (req, res) => {
+    const error = validateTask(req.body);
+
+if (error) {
+  return res.status(400).json({ message: error });
+}
+
     const  taskId = parseInt(req.params.id);
   const { title, description, completed } = req.body;
 
@@ -59,6 +72,12 @@ app.put('/tasks/:id', (req, res) => {
 
 //  Implement DELETE /tasks/:id: Delete a task by its ID.
 app.delete('/tasks/:id', (req, res) => {
+const error = validateTask(req.body);
+
+if (error) {
+  return res.status(400).json({ message: error });
+}
+
     const  taskId = parseInt(req.params.id);
 
 
