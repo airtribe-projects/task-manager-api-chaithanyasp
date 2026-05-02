@@ -5,6 +5,11 @@ const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+//  GET /tasks: Retrieve all tasks.
+ app.get("/tasks",(req,res)=>{
+    res.send("task list")
+ })
+
 app.listen(port, (err) => {
     if (err) {
         return console.log('Something bad happened', err);
