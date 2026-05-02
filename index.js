@@ -10,7 +10,33 @@ app.get('/', (req, res) => {
 
 //  GET /tasks: Retrieve all tasks.
 app.get('/tasks', (req, res) => {
-  res.json(tasksData);
+    const {completed} = req.query;
+const { sort } = req.query; 
+
+    let tasks = [...tasksData.tasks]; 
+
+    // filtering
+     if(completed !== undefined){
+        if(completed != 'true' && completed != 'false'){
+            return res.status(400).json({
+                message : "complete mush be boolean"
+            })
+        }
+    
+     const isCompleted = completed === "true";
+     tasks = tasks.filter(task=>task.completed === isCompleted);
+    }
+// sorting
+      if (sort === 'asc' || sort === 'desc') {
+    tasks.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+
+      return sort === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }
+
+  res.json(tasks);
 });
 
 // Implement GET /tasks/:id: Retrieve a specific task by its ID.
@@ -32,7 +58,8 @@ const { title, description, completed } = req.body;
     id: tasksData.tasks.length + 1,
     title,
     description,
-    completed: completed ?? false
+    completed: completed ?? false,
+    createdAt: new Date().toISOString() //for sorting
   };
 
    tasksData.tasks.push(newTask);
@@ -46,7 +73,7 @@ const { title, description, completed } = req.body;
 
 // Implement PUT /tasks/:id: Update an existing task by its ID.
 app.put('/tasks/:id', (req, res) => {
-    const error = validateTask(req.body);
+    const error = validateTask(req.body ,true);
 
 if (error) {
   return res.status(400).json({ message: error });
@@ -63,6 +90,8 @@ if (error) {
  if (title !== undefined) task.title = title;
   if (description !== undefined) task.description = description;
   if (completed !== undefined) task.completed = completed;
+
+   task.updatedAt = new Date().toISOString();
 
   res.json({
     message: 'Task updated successfully',
